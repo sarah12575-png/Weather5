@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>날씨 앱 - Vercel</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f3; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 320px; }
+        .temp { font-size: 3.5rem; font-weight: bold; color: #4A90E2; margin: 10px 0; }
+        .status { font-size: 1.2rem; color: #666; margin-bottom: 20px; }
+        button { background: #4A90E2; color: white; border: none; padding: 12px 25px; border-radius: 30px; cursor: pointer; font-size: 1rem; transition: 0.3s; }
+        button:hover { background: #357ABD; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 id="location-name">부산 날씨</h2>
+    <div id="weather-display">
+        <div class="temp" id="temp">--°</div>
+        <p class="status" id="status">데이터를 불러오는 중...</p>
+    </div>
+    <button onclick="fetchWeather()">날씨 업데이트</button>
+</div>
+
+<script>
+    async function fetchWeather() {
+        const tempEl = document.getElementById('temp');
+        const statusEl = document.getElementById('status');
+        
+        try {
+            const response = await fetch('/api/weather');
+            const data = await response.json();
+
+            if (data.response?.body?.items) {
+                const items = data.response.body.items.item;
+                const temp = items.find(i => i.category === 'TMP').fcstValue;
+                const sky = items.find(i => i.category === 'SKY').fcstValue;
+                
+                const skyText = { "1": "맑음 ☀️", "3": "구름많음 ⛅", "4": "흐림 ☁️" };
+                
+                tempEl.innerText = `${temp}°`;
+                statusEl.innerText = skyText[sky] || "정보 없음";
+            } else {
+                statusEl.innerText = "API 키 또는 데이터 오류";
+            }
+        } catch (err) {
+            statusEl.innerText = "서버 연결에 실패했습니다.";
+        }
+    }
+    // 페이지 로드 시 즉시 실행
+    window.onload = fetchWeather;
+</script>
+</body>
+</html>
